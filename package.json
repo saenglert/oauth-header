@@ -1,6 +1,6 @@
 {
   "name": "oauth-header",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Generates the value for the Authorization header when using OAuth 1",
   "main": "dist/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "author": "Sascha Englert <npm@englerts.de> (https://englerts.de)",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/saenglert/oauth-header"
   },
   "devDependencies": {
     "@types/node": "^16.11.4",
