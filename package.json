@@ -1,0 +1,19 @@
+{
+  "name": "oauth_header",
+  "version": "1.0.0",
+  "description": "Generates the value for the Authorization header when using OAuth 1",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sascha Englert <npm@englerts.de> (https://englerts.de)",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.4",
+    "typescript": "^4.4.4"
+  },
+  "license": "ISC"
+}
