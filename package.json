@@ -1,6 +1,6 @@
 {
   "name": "oauth-header",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Generates the value for the Authorization header when using OAuth 1",
   "main": "dist/index.js",
   "scripts": {

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OAuthHeader = exports.SignatureMethods = exports.unix = exports.randomValueHex = void 0;
+exports.Generator = exports.SignatureMethods = exports.unix = exports.randomValueHex = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 /**
  * Creates a random hex value
@@ -31,7 +31,7 @@ var SignatureMethods;
     SignatureMethods["HMACSHA1"] = "HMAC-SHA1";
     SignatureMethods["RSASHA1"] = "RSA-SHA1";
 })(SignatureMethods = exports.SignatureMethods || (exports.SignatureMethods = {}));
-class OAuthHeader {
+class Generator {
     /**
      *
      * @param consumerKey
@@ -46,7 +46,12 @@ class OAuthHeader {
         this.tokenSecret = tokenSecret;
     }
     /**
-     * Generates the value for the Authorization header.
+     * Generates the value for the Authorization header
+     *
+     * @param httpMethod
+     * @param url If the url doesn't start with http or https https is added.
+     * @param signatureMethod
+     * @returns
      */
     generateHeaderValue(httpMethod, url, signatureMethod = SignatureMethods.HMACSHA1) {
         let headerValue = "OAuth ";
@@ -55,12 +60,12 @@ class OAuthHeader {
             /**
              * Out of all paramteres only those relevant to OAuth may be added to he header value
              */
-            if (OAuthHeader.isOAuthParameter(value[0])) {
-                headerValue += "" + OAuthHeader.encode(value[0]) + "=\"" + OAuthHeader.encode(value[1]) + "\"" + OAuthHeader.seperator;
+            if (Generator.isOAuthParameter(value[0])) {
+                headerValue += "" + Generator.encode(value[0]) + "=\"" + Generator.encode(value[1]) + "\"" + Generator.seperator;
             }
         });
         // Remove trailing comma
-        return headerValue.substring(0, headerValue.length - OAuthHeader.seperator.length);
+        return headerValue.substring(0, headerValue.length - Generator.seperator.length);
     }
     /**
      * Generate the parameters for the Authorization header
@@ -81,20 +86,43 @@ class OAuthHeader {
             "oauth_consumer_key": this.consumerKey,
             "oauth_token": this.tokenKey
         };
-        const parsedUrl = new URL(url);
+        const parsedUrl = new URL(Generator.addHttpProtocolIfNotPresent(url));
         parsedUrl.searchParams.forEach((value, key) => {
             /** Can only key value pairs. No objects */
             parameters[key] = value;
         });
-        const sorted = OAuthHeader.makeArrayOfParameters(parameters)
-            .sort(OAuthHeader.requestParamSorter);
-        const signature = OAuthHeader.generateSignature(method, url, OAuthHeader.normalizeRequestParameters(parameters), this.consumerSecret, this.tokenSecret, signatureMethod);
+        const sorted = Generator.makeArrayOfParameters(parameters)
+            .sort(Generator.requestParamSorter);
+        const signature = Generator.generateSignature(method, url, Generator.normalizeRequestParameters(parameters), this.consumerSecret, this.tokenSecret, signatureMethod);
         sorted.push(["oauth_signature", signature]);
         return sorted;
     }
+    /**
+     * Checks wether or not the url starts with the
+     * @param url
+     * @returns
+     */
+    static addHttpProtocolIfNotPresent(url) {
+        if (!/^(?:f|ht)tps?\:\/\//.test(url)) {
+            url = "https://" + url;
+        }
+        return url;
+    }
+    /**
+     * Generates the OAuth signature string given the methods parameters
+     * and class members.
+     *
+     * @param method
+     * @param url
+     * @param normalizedParameters
+     * @param consumerSecret
+     * @param tokenSecret
+     * @param signatureMethod
+     * @returns The OAuth signature to be used for the current request
+     */
     static generateSignature(method, url, normalizedParameters, consumerSecret, tokenSecret, signatureMethod) {
-        const signatureBase = OAuthHeader.generateSignatureBase(method, url, normalizedParameters);
-        const key = `${OAuthHeader.encode(consumerSecret)}&${OAuthHeader.encode(tokenSecret)}`;
+        const signatureBase = Generator.generateSignatureBase(method, url, normalizedParameters);
+        const key = `${Generator.encode(consumerSecret)}&${Generator.encode(tokenSecret)}`;
         let hash = "";
         switch (signatureMethod) {
             case SignatureMethods.PLAINTEXT:
@@ -114,11 +142,11 @@ class OAuthHeader {
      * @param method HTTP Method
      * @param url The URL the request is being made to
      * @param normalizedParameters
-     * @returns
+     * @returns The signature base string
      */
     static generateSignatureBase(method, url, normalizedParameters) {
-        const encodedUrl = OAuthHeader.encode(OAuthHeader.normalizeUrl(url));
-        const encodedParameters = OAuthHeader.encode(normalizedParameters);
+        const encodedUrl = Generator.encode(Generator.normalizeUrl(url));
+        const encodedParameters = Generator.encode(normalizedParameters);
         return `${method.toUpperCase()}&${encodedUrl}&${encodedParameters}`;
     }
     /**
@@ -157,15 +185,15 @@ class OAuthHeader {
      * @returns A string containing all parameters for the request
      */
     static normalizeRequestParameters(parameters) {
-        return OAuthHeader.makeArrayOfParameters(parameters)
+        return Generator.makeArrayOfParameters(parameters)
             // First encode them #3.4.1.3.2 .1
             .map(value => {
-            value[0] = OAuthHeader.encode(value[0]);
-            value[1] = OAuthHeader.encode(value[1]);
+            value[0] = Generator.encode(value[0]);
+            value[1] = Generator.encode(value[1]);
             return value;
         })
             // Then sort them #3.4.1.3.2 .2
-            .sort(OAuthHeader.requestParamSorter)
+            .sort(Generator.requestParamSorter)
             // Then concatenate together #3.4.1.3.2 .3 & .4
             .reduce((prev, curr, index, arr) => {
             prev += curr[0];
@@ -213,6 +241,6 @@ class OAuthHeader {
         return m && (m[0] === "oauth_");
     }
 }
-exports.OAuthHeader = OAuthHeader;
-OAuthHeader.seperator = ",";
+exports.Generator = Generator;
+Generator.seperator = ",";
 //# sourceMappingURL=index.js.map

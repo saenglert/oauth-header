@@ -18,7 +18,7 @@ export declare enum SignatureMethods {
     RSASHA1 = "RSA-SHA1"
 }
 export declare type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'HEAD' | 'PATCH' | 'TRACE' | 'OPTIONS' | 'CONNECT';
-export declare class OAuthHeader {
+export declare class Generator {
     consumerKey: string;
     consumerSecret: string;
     tokenKey: string;
@@ -33,7 +33,12 @@ export declare class OAuthHeader {
      */
     constructor(consumerKey: string, consumerSecret: string, tokenKey: string, tokenSecret: string);
     /**
-     * Generates the value for the Authorization header.
+     * Generates the value for the Authorization header
+     *
+     * @param httpMethod
+     * @param url If the url doesn't start with http or https https is added.
+     * @param signatureMethod
+     * @returns
      */
     generateHeaderValue(httpMethod: HttpMethod, url: string, signatureMethod?: SignatureMethods): string;
     /**
@@ -45,6 +50,24 @@ export declare class OAuthHeader {
      * @returns
      */
     private generateParameters;
+    /**
+     * Checks wether or not the url starts with the
+     * @param url
+     * @returns
+     */
+    private static addHttpProtocolIfNotPresent;
+    /**
+     * Generates the OAuth signature string given the methods parameters
+     * and class members.
+     *
+     * @param method
+     * @param url
+     * @param normalizedParameters
+     * @param consumerSecret
+     * @param tokenSecret
+     * @param signatureMethod
+     * @returns The OAuth signature to be used for the current request
+     */
     private static generateSignature;
     /**
      * Generates the base string which is used in creating the OAuth signature
@@ -52,7 +75,7 @@ export declare class OAuthHeader {
      * @param method HTTP Method
      * @param url The URL the request is being made to
      * @param normalizedParameters
-     * @returns
+     * @returns The signature base string
      */
     private static generateSignatureBase;
     /**
